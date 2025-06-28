@@ -1,0 +1,46 @@
+# User-Center
+
+## 实操
+
+https://www.codefather.cn/course/1790943469757837313/section/1859494346744762370#heading-11
+
+
+
+## 遇到的问题
+
+**idea、webstorm下载插件报错：插件无法下载**
+
+插件下载设置里使用无代理，不要使用自动检测代理
+
+
+
+## 笔记
+
+**idea常用插件：**
+
+- Alibaba Java Coding：阿里巴巴代码规范
+- Auto Filling Java Call Arguments：自动填充参数
+- Background Image Plus：背景图
+- Code Glance：代码小地图
+- GenerateAllsetter：自动生成所有setter方法
+- Key Promoter X：记录快捷键
+- Mybatis X：自动生成数据库基本操作代码
+- Rainbow：彩虹括号
+- Translation：翻译
+- Nyan progress Bar：彩虹进度条
+
+**webstorm插件：**
+
+- Background Image Plus：背景图
+
+- Code Glance：代码小地图
+
+- Key Promoter X：记录快捷键
+
+- Rainbow：彩虹括号
+
+- Translation：翻译
+
+- Nyan progress Bar：彩虹进度条
+
+    
