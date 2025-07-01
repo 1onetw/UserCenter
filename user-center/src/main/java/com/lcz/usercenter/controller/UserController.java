@@ -20,12 +20,13 @@ import java.util.stream.Collectors;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api")
+@CrossOrigin(origins = {"http://localhost:3000"}, allowCredentials = "true")
 public class UserController {
     @Resource
     private UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("/user/register")
     public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             return null;
@@ -39,7 +40,7 @@ public class UserController {
         return userService.userRegister(userName, userPassword, checkPassword);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/user/login")
     public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             return null;
@@ -52,10 +53,10 @@ public class UserController {
         return userService.userLogin(userName, userPassword, request);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/user/search")
     public List<User> searchUsers(String userName, HttpServletRequest request) {
         /* 1.鉴权 */
-        if (!userService.isAdmin(request)){
+        if (!userService.isAdmin(request)) {
             return new ArrayList<>();
         }
         /* 2.查询用户列表 */
@@ -72,10 +73,10 @@ public class UserController {
         }).collect(Collectors.toList());
     }
 
-    @PostMapping("/delete")
+    @PostMapping("/user/delete")
     public boolean deleteUser(@RequestBody long id, HttpServletRequest request) {
         /* 1.鉴权 */
-        if (!userService.isAdmin(request)){
+        if (!userService.isAdmin(request)) {
             return false;
         }
         /* 2.删除用户 */

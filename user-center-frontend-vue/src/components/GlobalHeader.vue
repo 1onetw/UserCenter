@@ -1,9 +1,9 @@
 <template>
   <div id="globalHeader">
-    <a-row>
+    <a-row :wrap="false">
       <a-col flex="200px">
         <div class="title-bar">
-          <img src="" alt="logo" class="logo" />
+          <img src="@/assets/logo.png" alt="logo" class="logo" />
           <div class="title">啾啾用户中心</div>
         </div>
       </a-col>
@@ -12,10 +12,16 @@
           v-model:selectedKeys="current"
           mode="horizontal"
           :items="items"
+          @click="doMenuClick"
         />
       </a-col>
       <a-col flex="80px">
-        <a-button type="primary" href="/user/login">登录</a-button>
+        <div v-if="loginUserStore.loginUser.id">
+          {{ loginUserStore.loginUser.username ?? "无名" }}
+        </div>
+        <div v-else>
+          <a-button type="primary" href="/user/login">登录</a-button>
+        </div>
       </a-col>
     </a-row>
   </div>
@@ -24,8 +30,16 @@
 import { h, ref } from "vue";
 import { HomeOutlined, CrownOutlined } from "@ant-design/icons-vue";
 import { MenuProps } from "ant-design-vue";
+import { useRouter } from "vue-router";
+import { useLoginUserStore } from "@/store/user/useLoginUserStore";
 
-const current = ref<string[]>(["mail"]);
+const loginUserStore = useLoginUserStore();
+console.log(loginUserStore.loginUser.username);
+const router = useRouter();
+const current = ref<string[]>();
+router.afterEach((to, from, next) => {
+  current.value = [to.path];
+});
 const items = ref<MenuProps["items"]>([
   {
     key: "/",
@@ -44,7 +58,7 @@ const items = ref<MenuProps["items"]>([
     title: "用户注册",
   },
   {
-    key: "/user/userManage",
+    key: "/admin/userManage",
     icon: () => h(CrownOutlined),
     label: "用户管理",
     title: "用户管理 ",
@@ -59,6 +73,12 @@ const items = ref<MenuProps["items"]>([
     title: "lcz博客",
   },
 ]);
+// 路由跳转事件
+const doMenuClick = ({ key }: { key: string }) => {
+  router.push({
+    path: key,
+  });
+};
 </script>
 
 <style scoped>
