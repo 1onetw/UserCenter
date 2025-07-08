@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,13 +19,13 @@ import java.util.stream.Collectors;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 @CrossOrigin(origins = {"http://localhost:3000"}, allowCredentials = "true")
 public class UserController {
     @Resource
     private UserService userService;
 
-    @PostMapping("/user/register")
+    @PostMapping("register")
     public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             return null;
@@ -40,7 +39,7 @@ public class UserController {
         return userService.userRegister(userName, userPassword, checkPassword);
     }
 
-    @PostMapping("/user/login")
+    @PostMapping("login")
     public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             return null;
@@ -53,7 +52,7 @@ public class UserController {
         return userService.userLogin(userName, userPassword, request);
     }
 
-    @GetMapping("/user/search")
+    @GetMapping("search")
     public List<User> searchUsers(String userName, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
@@ -73,7 +72,7 @@ public class UserController {
         }).collect(Collectors.toList());
     }
 
-    @PostMapping("/user/delete")
+    @PostMapping("delete")
     public boolean deleteUser(@RequestBody long id, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
@@ -84,6 +83,11 @@ public class UserController {
             return false;
         }
         return userService.removeById(id);
+    }
+
+    @PostMapping("logout")
+    public Integer userLogout(HttpServletRequest request) {
+        return userService.userLogout(request);
     }
 
 }
