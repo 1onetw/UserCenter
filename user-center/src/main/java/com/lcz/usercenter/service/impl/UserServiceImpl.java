@@ -2,6 +2,9 @@ package com.lcz.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lcz.usercenter.common.BaseResponse;
+import com.lcz.usercenter.common.ErrorCode;
+import com.lcz.usercenter.common.ResultUtils;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.service.UserService;
 import com.lcz.usercenter.mapper.UserMapper;
@@ -31,31 +34,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private UserMapper userMapper;
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
+    public BaseResponse<Long> userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1.校验
         if (StringUtils.isAnyBlank(userAccount,userPassword,checkPassword, planetCode)){
-            return -1;
+            return ResultUtils.error(ErrorCode.NULL_ERROR);
         }
         if (userAccount.length() < 4){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         if (planetCode.length() > 5){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         // 账户不包含特殊字符
         Pattern pattern = Pattern.compile("[!@#$%^&*(){}\\[\\]:;\"',.<>?/~`]");
         Matcher matcher = pattern.matcher(userAccount);
         if (matcher.find()){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         // 校验密码是否相同
         if (!checkPassword.equals(userPassword)){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         // 账户不能重复
@@ -63,7 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount",userAccount);
         long count = this.count(queryWrapper);
         if (count > 0){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         // 星球编号不能重复
@@ -71,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("planetCode",planetCode);
         count = this.count(queryWrapper);
         if (count > 0){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         // 2.加密 —— 先做一个测试【在项目测试类中测局部代码】
@@ -84,29 +87,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setPlanetCode(planetCode);
         boolean saveResult = this.save(user);
         if (!saveResult){
-            return -1;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
-        return user.getId();
+        Long result = user.getId();
+        return ResultUtils.success(result);
     }
 
     @Override
-    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         /* 1.校验 */
         if (StringUtils.isAnyBlank(userAccount,userPassword)){
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR);
         }
         if (userAccount.length() < 4){
-            return null;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         if (userPassword.length() < 8){
-            return null;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         // 账户不包含特殊字符
         Pattern pattern = Pattern.compile("[!@#$%^&*(){}\\[\\]:;\"',.<>?/~`]");
         Matcher matcher = pattern.matcher(userAccount);
         if (matcher.find()){
-            return null;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         /* 2.查询用户是否存在 */
@@ -120,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 用户不存在
         if (user == null){
             log.info("user login failed, userPassword is not correct.");
-            return null;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
 
         /* 3.用户脱敏 */
@@ -129,7 +133,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         /* 4.记录用户登录态（session）*/
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
 
-        return safetyUser;
+        return ResultUtils.success(safetyUser);
     }
 
     @Override
@@ -159,9 +163,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public int userLogout(HttpServletRequest request) {
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         request.getSession().removeAttribute(USER_LOGIN_STATE);
-        return 1;
+        return ResultUtils.success(1);
     }
 }
 

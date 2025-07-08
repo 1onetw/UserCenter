@@ -2,6 +2,7 @@ package com.lcz.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lcz.usercenter.common.BaseResponse;
+import com.lcz.usercenter.common.ErrorCode;
 import com.lcz.usercenter.common.ResultUtils;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.model.request.UserLoginRequest;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author lcz
- * @version 1.0
+ * @version 2.0
  */
 @RestController
 @RequestMapping("/api/user")
@@ -30,38 +31,36 @@ public class UserController {
     @PostMapping("register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR);
         }
         String userName = userRegisterRequest.getUserName();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String planetCode = userRegisterRequest.getPlanetCode();
         if (StringUtils.isAnyBlank(userName, userPassword, checkPassword, planetCode)) {
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR);
         }
-        long result = userService.userRegister(userName, userPassword, checkPassword, planetCode);
-        return ResultUtils.success(result);
+        return userService.userRegister(userName, userPassword, checkPassword, planetCode);
     }
 
     @PostMapping("login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR);
         }
         String userName = userLoginRequest.getUserName();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userName, userPassword)) {
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR);
         }
-        User result = userService.userLogin(userName, userPassword, request);
-        return ResultUtils.success(result);
+        return userService.userLogin(userName, userPassword, request);
     }
 
     @GetMapping("search")
     public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
-            return null;
+            return ResultUtils.error(ErrorCode.NO_AUTH);
         }
         /* 2.查询用户列表 */
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -82,11 +81,11 @@ public class UserController {
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
-            return null;
+            return ResultUtils.error(ErrorCode.NO_AUTH);
         }
         /* 2.删除用户 */
         if (id <= 0) {
-            return null;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         boolean result = userService.removeById(id);
         return ResultUtils.success(result);
@@ -94,8 +93,7 @@ public class UserController {
 
     @PostMapping("logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
-        int result = userService.userLogout(request);
-        return ResultUtils.success(result);
+        return userService.userLogout(request);
     }
 
 }
