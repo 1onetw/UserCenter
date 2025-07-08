@@ -1,6 +1,8 @@
 package com.lcz.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lcz.usercenter.common.BaseResponse;
+import com.lcz.usercenter.common.ResultUtils;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.model.request.UserLoginRequest;
 import com.lcz.usercenter.model.request.UserRegisterRequest;
@@ -26,7 +28,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             return null;
         }
@@ -37,11 +39,12 @@ public class UserController {
         if (StringUtils.isAnyBlank(userName, userPassword, checkPassword, planetCode)) {
             return null;
         }
-        return userService.userRegister(userName, userPassword, checkPassword, planetCode);
+        long result = userService.userRegister(userName, userPassword, checkPassword, planetCode);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             return null;
         }
@@ -50,14 +53,15 @@ public class UserController {
         if (StringUtils.isAnyBlank(userName, userPassword)) {
             return null;
         }
-        return userService.userLogin(userName, userPassword, request);
+        User result = userService.userLogin(userName, userPassword, request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("search")
-    public List<User> searchUsers(String userName, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
-            return new ArrayList<>();
+            return null;
         }
         /* 2.查询用户列表 */
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -66,29 +70,32 @@ public class UserController {
             queryWrapper.like(true, "username", userName);
         }
         List<User> userList = userService.list(queryWrapper);
-        return userList.stream().map(user ->
+        List<User> result = userList.stream().map(user ->
         {
             // 用户脱敏
             return userService.getSafetyUser(user);
         }).collect(Collectors.toList());
+        return ResultUtils.success(result);
     }
 
     @PostMapping("delete")
-    public boolean deleteUser(@RequestBody long id, HttpServletRequest request) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
-            return false;
+            return null;
         }
         /* 2.删除用户 */
         if (id <= 0) {
-            return false;
+            return null;
         }
-        return userService.removeById(id);
+        boolean result = userService.removeById(id);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("logout")
-    public Integer userLogout(HttpServletRequest request) {
-        return userService.userLogout(request);
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
+        int result = userService.userLogout(request);
+        return ResultUtils.success(result);
     }
 
 }
