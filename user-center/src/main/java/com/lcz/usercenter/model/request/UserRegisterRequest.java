@@ -13,9 +13,23 @@ import java.io.Serializable;
 @Data
 public class UserRegisterRequest implements Serializable {
 
+    /**
+     * 用户名
+     */
     private String userName;
 
+    /**
+     * 用户密码
+     */
     private String userPassword;
 
+    /**
+     * 校验密码
+     */
     private String checkPassword;
+
+    /**
+     * 星球编号
+     */
+    private String planetCode;
 }

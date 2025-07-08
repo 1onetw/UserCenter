@@ -31,15 +31,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private UserMapper userMapper;
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1.校验
-        if (StringUtils.isAnyBlank(userAccount,userPassword,checkPassword)){
+        if (StringUtils.isAnyBlank(userAccount,userPassword,checkPassword, planetCode)){
             return -1;
         }
         if (userAccount.length() < 4){
             return -1;
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8){
+            return -1;
+        }
+        if (planetCode.length() > 5){
             return -1;
         }
 
@@ -63,6 +66,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return -1;
         }
 
+        // 星球编号不能重复
+        queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("planetCode",planetCode);
+        count = this.count(queryWrapper);
+        if (count > 0){
+            return -1;
+        }
+
         // 2.加密 —— 先做一个测试【在项目测试类中测局部代码】
         String encyptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
 
@@ -70,6 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encyptPassword);
+        user.setPlanetCode(planetCode);
         boolean saveResult = this.save(user);
         if (!saveResult){
             return -1;
@@ -142,6 +154,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setUserStatus(originUser.getUserStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setUserRole(originUser.getUserRole());
+        safetyUser.setPlanetCode(originUser.getPlanetCode());
         return safetyUser;
     }
 
