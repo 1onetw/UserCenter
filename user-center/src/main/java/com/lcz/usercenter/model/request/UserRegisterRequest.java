@@ -1,7 +1,6 @@
 package com.lcz.usercenter.model.request;
 
 import lombok.Data;
-import org.apache.ibatis.javassist.SerialVersionUID;
 
 import java.io.Serializable;
 
@@ -14,9 +13,9 @@ import java.io.Serializable;
 public class UserRegisterRequest implements Serializable {
 
     /**
-     * 用户名
+     * 用户账号
      */
-    private String userName;
+    private String userAccount;
 
     /**
      * 用户密码

@@ -1,11 +1,9 @@
 package com.lcz.usercenter.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.lcz.usercenter.common.BaseResponse;
 import com.lcz.usercenter.model.domain.User;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.prefs.BackingStoreException;
 
 /**
 * @author l1853
@@ -23,7 +21,7 @@ public interface UserService extends IService<User> {
      * @param planetCode 星球编号
      * @return 新用户 id
      */
-    BaseResponse<Long> userRegister(String userAccount, String userPassword, String checkPassword, String planetCode);
+    Long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode);
 
     /**
      * 用户登录
@@ -32,7 +30,7 @@ public interface UserService extends IService<User> {
      * @param request HttpServletRequest对象
      * @return 脱敏后用户信息
      */
-    BaseResponse<User> userLogin(String userAccount, String userPassword, HttpServletRequest request);
+    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
     /**
      * 判断是否为管理员
@@ -54,5 +52,5 @@ public interface UserService extends IService<User> {
      * @param request HttpServletRequest对象
      * @return 1 注销成功
      */
-    BaseResponse<Integer> userLogout(HttpServletRequest request);
+    Integer userLogout(HttpServletRequest request);
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lcz.usercenter.common.BaseResponse;
 import com.lcz.usercenter.common.ErrorCode;
 import com.lcz.usercenter.common.ResultUtils;
+import com.lcz.usercenter.exception.BusinessException;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.model.request.UserLoginRequest;
 import com.lcz.usercenter.model.request.UserRegisterRequest;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,36 +31,38 @@ public class UserController {
     @PostMapping("register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return ResultUtils.error(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.NULL_ERROR, "参数为空");
         }
-        String userName = userRegisterRequest.getUserName();
+        String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String planetCode = userRegisterRequest.getPlanetCode();
-        if (StringUtils.isAnyBlank(userName, userPassword, checkPassword, planetCode)) {
-            return ResultUtils.error(ErrorCode.NULL_ERROR);
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "参数为空");
         }
-        return userService.userRegister(userName, userPassword, checkPassword, planetCode);
+        Long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return ResultUtils.error(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.NULL_ERROR, "参数为空");
         }
         String userName = userLoginRequest.getUserName();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userName, userPassword)) {
-            return ResultUtils.error(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.NULL_ERROR, "参数为空");
         }
-        return userService.userLogin(userName, userPassword, request);
+        User result = userService.userLogin(userName, userPassword, request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("search")
     public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
-            return ResultUtils.error(ErrorCode.NO_AUTH);
+            throw new BusinessException(ErrorCode.NO_AUTH, "没有管理员权限");
         }
         /* 2.查询用户列表 */
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -81,7 +83,7 @@ public class UserController {
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
-            return ResultUtils.error(ErrorCode.NO_AUTH);
+            throw new BusinessException(ErrorCode.NO_AUTH, "没有管理员权限");
         }
         /* 2.删除用户 */
         if (id <= 0) {
@@ -93,7 +95,8 @@ public class UserController {
 
     @PostMapping("logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
-        return userService.userLogout(request);
+        Integer result = userService.userLogout(request);
+        return ResultUtils.success(result);
     }
 
 }
