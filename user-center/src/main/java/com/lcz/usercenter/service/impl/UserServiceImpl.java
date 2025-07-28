@@ -43,6 +43,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private Gson gson;
 
+    /**
+     * 用户注册
+     *
+     * @param userAccount 用户账户
+     * @param userPassword 用户密码
+     * @param checkPassword 校验码
+     * @param planetCode 星球编号
+     * @return 新用户 id
+     */
     @Override
     public Long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1.校验
@@ -102,6 +111,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user.getId();
     }
 
+    /**
+     * 用户登录
+     * @param userAccount 用户账户
+     * @param userPassword 用户密码
+     * @param request HttpServletRequest对象
+     * @return 脱敏后用户信息
+     */
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         /* 1.校验 */
@@ -145,6 +161,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return safetyUser;
     }
 
+    /**
+     * 判断是否为管理员
+     * @param request HttpServletRequest对象
+     * @return 布尔值
+     */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
         User safetyUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
@@ -154,6 +175,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return true;
     }
 
+    /**
+     * 获取脱敏用户
+     * @param originUser 未脱敏用户
+     * @return 脱敏用户
+     */
     @Override
     public User getSafetyUser(User originUser) {
         User safetyUser = new User();
@@ -171,6 +197,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return safetyUser;
     }
 
+    /**
+     * 用户注销
+     *
+     * @param request HttpServletRequest对象
+     * @return 1 注销成功
+     */
     @Override
     public Integer userLogout(HttpServletRequest request) {
         request.getSession().removeAttribute(USER_LOGIN_STATE);
