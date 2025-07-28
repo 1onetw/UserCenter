@@ -1,5 +1,7 @@
 package com.lcz.usercenter.service;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import com.lcz.usercenter.UserCenterApplication;
 import com.lcz.usercenter.model.domain.User;
@@ -81,5 +83,21 @@ public class UserServiceTest {
         planetCode = "2";
         result = userService.userRegister(userAccount,userPassword,checkPassword, planetCode);
         Assertions.assertTrue(result > 0);
+    }
+
+    // 434, 442, 417
+    @Test
+    void searchUsersByTagsBySql() {
+        List<String> tags = Arrays.asList("Java", "Python");
+        List<User> userList = userService.searchUsersByTagsBySql(tags);
+        Assertions.assertNotNull(userList);
+    }
+
+    // 432, 409, 413
+    @Test
+    void searchUsersByTagsByMemory() {
+        List<String> tags = Arrays.asList("Java", "Python");
+        List<User> userList = userService.searchUsersByTagsByMemory(tags);
+        Assertions.assertNotNull(userList);
     }
 }

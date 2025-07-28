@@ -10,6 +10,7 @@ import com.lcz.usercenter.model.request.UserLoginRequest;
 import com.lcz.usercenter.model.request.UserRegisterRequest;
 import com.lcz.usercenter.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -97,6 +98,17 @@ public class UserController {
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         Integer result = userService.userLogout(request);
         return ResultUtils.success(result);
+    }
+
+    @PostMapping("searchUsersByTags")
+    public BaseResponse<List<User>> searchUsersByTags(@RequestBody List<String> tags) {
+        // 1.校验
+        if (CollectionUtils.isEmpty(tags)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        // 2.查询
+        List<User> userList = userService.searchUsersByTagsBySql(tags);
+        return ResultUtils.success(userList);
     }
 
 }
