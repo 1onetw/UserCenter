@@ -11,7 +11,7 @@ import lombok.Getter;
 public enum ErrorCode {
     SUCCESS(0,"success",""),
     PARAMS_ERROR(40001,"请求参数错误",""),
-    NULL_ERROR(40002,"请求参数为空",""),
+    NULL_ERROR(40002,"请求数据为空",""),
     NO_LOGIN(40100,"未登录",""),
     NO_AUTH(40101,"没有权限",""),
     SYSTEM_ERROR(50000,"系统内部异常","");

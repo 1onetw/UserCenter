@@ -36,7 +36,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public Long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1.校验
         if (StringUtils.isAnyBlank(userAccount,userPassword,checkPassword, planetCode)){
-            throw new BusinessException(ErrorCode.NULL_ERROR, "参数为空");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         if (userAccount.length() < 4){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度小于4位");
@@ -95,7 +95,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         /* 1.校验 */
         if (StringUtils.isAnyBlank(userAccount,userPassword)){
-            throw new BusinessException(ErrorCode.NULL_ERROR, "参数为空");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         if (userAccount.length() < 4){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度小于4位");
@@ -122,7 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 用户不存在
         if (user == null){
             log.info("user login failed, userPassword is not correct.");
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+            throw new BusinessException(ErrorCode.NULL_ERROR, "用户不存在");
         }
 
         /* 3.用户脱敏 */
