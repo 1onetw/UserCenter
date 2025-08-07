@@ -1,6 +1,7 @@
 package com.lcz.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lcz.usercenter.common.BaseResponse;
 import com.lcz.usercenter.common.ErrorCode;
 import com.lcz.usercenter.common.ResultUtils;
@@ -8,6 +9,7 @@ import com.lcz.usercenter.exception.BusinessException;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.model.request.UserLoginRequest;
 import com.lcz.usercenter.model.request.UserRegisterRequest;
+import com.lcz.usercenter.model.request.UserSearchByTagsRequest;
 import com.lcz.usercenter.model.request.UserUpdateRequest;
 import com.lcz.usercenter.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +65,7 @@ public class UserController {
     }
 
     @GetMapping("search")
-    public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(long pageNum, long pageSize, String userName, HttpServletRequest request) {
         /* 1.鉴权 */
         if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH, "没有管理员权限");
@@ -74,7 +76,7 @@ public class UserController {
         if (StringUtils.isNotBlank(userName)) {
             queryWrapper.like(true, "username", userName);
         }
-        List<User> userList = userService.list(queryWrapper);
+        List<User> userList = userService.page(new Page<>(pageNum, pageSize), queryWrapper).getRecords();
         List<User> result = userList.stream().map(user ->
         {
             // 用户脱敏
@@ -104,13 +106,16 @@ public class UserController {
     }
 
     @PostMapping("searchUsersByTags")
-    public BaseResponse<List<User>> searchUsersByTags(@RequestBody List<String> tags) {
+    public BaseResponse<List<User>> searchUsersByTags(@RequestBody UserSearchByTagsRequest userSearchByTagsRequest) {
+        List<String> tags = userSearchByTagsRequest.getTags();
+        long pageNum = userSearchByTagsRequest.getPageNum();
+        long pageSize = userSearchByTagsRequest.getPageSize();
         // 1.校验
         if (CollectionUtils.isEmpty(tags)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         // 2.查询
-        List<User> userList = userService.searchUsersByTagsBySql(tags);
+        List<User> userList = userService.searchUsersByTagsBySql(new Page<User>(pageNum, pageSize), tags);
         return ResultUtils.success(userList);
     }
 

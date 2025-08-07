@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lcz.usercenter.UserCenterApplication;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.service.impl.UserServiceImpl;
@@ -89,7 +90,7 @@ public class UserServiceTest {
     @Test
     void searchUsersByTagsBySql() {
         List<String> tags = Arrays.asList("Java", "Python");
-        List<User> userList = userService.searchUsersByTagsBySql(tags);
+        List<User> userList = userService.searchUsersByTagsBySql(new Page<>(1, 3), tags);
         Assertions.assertNotNull(userList);
     }
 
@@ -97,7 +98,10 @@ public class UserServiceTest {
     @Test
     void searchUsersByTagsByMemory() {
         List<String> tags = Arrays.asList("Java", "Python");
-        List<User> userList = userService.searchUsersByTagsByMemory(tags);
+        List<User> userList = userService.searchUsersByTagsByMemory(new Page<>(1, 2), tags);
+        for (User user : userList) {
+            System.out.println(user);
+        }
         Assertions.assertNotNull(userList);
     }
 }

@@ -1,5 +1,6 @@
 package com.lcz.usercenter.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.model.request.UserUpdateRequest;
@@ -63,14 +64,14 @@ public interface UserService extends IService<User> {
      * @param tags 标签列表
      * @return 用户列表
      */
-    List<User> searchUsersByTagsBySql(List<String> tags);
+    List<User> searchUsersByTagsBySql(Page<User> userPage, List<String> tags);
 
     /**
      * 根据标签查询用户（内存查询版）
      * @param tags 标签列表
      * @return 用户列表
      */
-    List<User> searchUsersByTagsByMemory(List<String> tags);
+    List<User> searchUsersByTagsByMemory(Page<User> userPage,  List<String> tags);
 
     /**
      * 更新用户信息

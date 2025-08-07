@@ -1,6 +1,7 @@
 package com.lcz.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -20,6 +21,7 @@ import org.springframework.util.StopWatch;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -229,7 +231,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     @Deprecated
     @Override
-    public List<User> searchUsersByTagsBySql(List<String> tags) {
+    public List<User> searchUsersByTagsBySql(Page<User> userPage, List<String> tags) {
         // start 计时
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -243,7 +245,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             queryWrapper.like("tags", tag);
         }
         // 3.执行查询，获取用户列表
-        List<User> userList = userMapper.selectList(queryWrapper);
+        List<User> userList = userMapper.selectPage(userPage, queryWrapper).getRecords();
         // 4.进行脱敏，返回脱敏用户列表
         userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
         // stop 计时
@@ -258,31 +260,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @return 用户列表
      */
     @Override
-    public List<User> searchUsersByTagsByMemory(List<String> tags) {
+    public List<User> searchUsersByTagsByMemory(Page<User> userPage, List<String> tags) {
         // start 计时
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
+        // 构造最终查询用户列表
+        List<User> userList = new ArrayList<>();
         // 1.校验
         if (CollectionUtils.isEmpty(tags)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
-        // 2.查询所有用户
-        List<User> userList = userMapper.selectList(new QueryWrapper<>());
-        // 3.内存中根据标签查询用户,再进行脱敏并返回用户列表
-        userList = userList.stream().filter(user -> {
-            String tagStr = user.getTags();
-            if (StringUtils.isEmpty(tagStr)) {
-                return false;
-            }
-            Set<String> tagNameSet = gson.fromJson(tagStr, new TypeToken<Set<String>>() {
-            }.getType());
-            for (String tag : tags) {
-                if (!tagNameSet.contains(tag)) {
+        while (userList.size() < userPage.getSize()){
+            // 2.查询所有用户
+            List<User> userListTemp = userMapper.selectPage(userPage, new QueryWrapper<>()).getRecords();
+            // 3.内存中根据标签查询用户,再进行脱敏并返回用户列表
+            userListTemp = userListTemp.stream().filter(user -> {
+                String tagStr = user.getTags();
+                if (StringUtils.isEmpty(tagStr)) {
                     return false;
                 }
-            }
-            return true;
-        }).map(this::getSafetyUser).collect(Collectors.toList());
+                Set<String> tagNameSet = gson.fromJson(tagStr, new TypeToken<Set<String>>() {
+                }.getType());
+                for (String tag : tags) {
+                    if (!tagNameSet.contains(tag)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).map(this::getSafetyUser).collect(Collectors.toList());
+            userList.addAll(userListTemp);
+        }
+        userList = userList.subList(0, (int) userPage.getSize());
         // stop 计时
         stopWatch.stop();
         log.info("基于内存根据标签查询用户：用户列表条数（{}），耗时（{}）", userList.size(), stopWatch.getTotalTimeMillis());
