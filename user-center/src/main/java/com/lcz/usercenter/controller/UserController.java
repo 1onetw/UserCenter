@@ -8,6 +8,7 @@ import com.lcz.usercenter.exception.BusinessException;
 import com.lcz.usercenter.model.domain.User;
 import com.lcz.usercenter.model.request.UserLoginRequest;
 import com.lcz.usercenter.model.request.UserRegisterRequest;
+import com.lcz.usercenter.model.request.UserUpdateRequest;
 import com.lcz.usercenter.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -17,6 +18,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.lcz.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author lcz
@@ -109,6 +112,21 @@ public class UserController {
         // 2.查询
         List<User> userList = userService.searchUsersByTagsBySql(tags);
         return ResultUtils.success(userList);
+    }
+
+    @PostMapping("updateUser")
+    public BaseResponse<Integer> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        // 1.校验
+        if (userUpdateRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        User loginUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "未登录");
+        }
+        // 2.更新
+        int result = userService.updateUser(userUpdateRequest, loginUser);
+        return ResultUtils.success(result);
     }
 
 }

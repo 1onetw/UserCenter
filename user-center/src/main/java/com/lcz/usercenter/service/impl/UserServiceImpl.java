@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import com.lcz.usercenter.common.ErrorCode;
 import com.lcz.usercenter.exception.BusinessException;
 import com.lcz.usercenter.model.domain.User;
+import com.lcz.usercenter.model.request.UserUpdateRequest;
 import com.lcz.usercenter.service.UserService;
 import com.lcz.usercenter.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,6 @@ import org.springframework.util.StopWatch;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -169,7 +169,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public boolean isAdmin(HttpServletRequest request) {
         User safetyUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (safetyUser == null || safetyUser.getUserRole() == ADMIN_ROLE){
+        if (safetyUser == null || safetyUser.getUserRole() != ADMIN_ROLE){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 判断是否为管理员
+     * @param loginUser 当前登录用户
+     * @return 布尔值
+     */
+    @Override
+    public boolean isAdmin(User loginUser) {
+        if (loginUser == null || loginUser.getUserRole() != ADMIN_ROLE){
             return false;
         }
         return true;
@@ -274,6 +287,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         stopWatch.stop();
         log.info("基于内存根据标签查询用户：用户列表条数（{}），耗时（{}）", userList.size(), stopWatch.getTotalTimeMillis());
         return userList;
+    }
+
+    @Override
+    public int updateUser(UserUpdateRequest userUpdateRequest, User loginUser) {
+        // 确保要修改的用户存在
+        Long userId = userUpdateRequest.getId();
+        User usernew = userMapper.selectById(userId);
+        if (usernew == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR, "请求数据为空");
+        }
+        // 根据要修改的用户信息生成新的用户对象
+        usernew.setUsername(userUpdateRequest.getUsername());
+        usernew.setAvatarUrl(userUpdateRequest.getAvatarUrl());
+        usernew.setGender(userUpdateRequest.getGender());
+        usernew.setPhone(userUpdateRequest.getPhone());
+        usernew.setEmail(userUpdateRequest.getEmail());
+        usernew.setTags(userUpdateRequest.getTags());
+        // 若为管理员，允许修改所有用户
+        // 若不为管理员，只允许修改当前用户
+        if (!isAdmin(loginUser) && !userId.equals(loginUser.getId())){
+            throw new BusinessException(ErrorCode.NO_AUTH, "没有管理员权限");
+        }
+        return userMapper.updateById(usernew);
     }
 }
 

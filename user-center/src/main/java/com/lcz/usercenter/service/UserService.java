@@ -2,6 +2,7 @@ package com.lcz.usercenter.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lcz.usercenter.model.domain.User;
+import com.lcz.usercenter.model.request.UserUpdateRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -40,6 +41,8 @@ public interface UserService extends IService<User> {
      */
     boolean isAdmin(HttpServletRequest request);
 
+    boolean isAdmin(User loginUser);
+
     /**
      * 获取脱敏用户
      * @param originUser 未脱敏用户
@@ -68,4 +71,12 @@ public interface UserService extends IService<User> {
      * @return 用户列表
      */
     List<User> searchUsersByTagsByMemory(List<String> tags);
+
+    /**
+     * 更新用户信息
+     * @param userUpdateRequest 待更新的用户信息
+     * @param loginUser 当前登录的用户信息
+     * @return 更新的用户 ID
+     */
+    int updateUser(UserUpdateRequest userUpdateRequest, User loginUser);
 }
